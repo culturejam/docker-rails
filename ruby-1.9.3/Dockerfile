@@ -16,9 +16,10 @@ RUN adduser rails --disabled-password --gecos "" \
 
 ONBUILD ADD Gemfile /home/rails/app/
 ONBUILD ADD Gemfile.lock /home/rails/app/
-ONBUILD RUN sudo -H -u rails bundle install --path /home/rails/bundle
+ONBUILD RUN chown -R rails:rails Gemfile Gemfile.lock
+ONBUILD RUN sudo -H -u rails bundle install --path $BUNDLE_PATH
 ONBUILD ADD . /home/rails/app
-ONBUILD RUN chown -R rails:rails /home/rails/app
+ONBUILD RUN chown -R rails:rails /home/rails/app $BUNDLE_PATH
 
 WORKDIR /home/rails/app
 EXPOSE 3000
