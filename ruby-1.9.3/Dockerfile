@@ -1,26 +1,20 @@
 FROM promojam/ruby:1.9.3
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV BUNDLE_PATH /home/rails/bundle
+RUN apt-get update && apt-get install -y nodejs --no-install-recommends && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y mysql-client postgresql-client sqlite3 --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y nodejs --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+# throw errors if Gemfile has been modified since Gemfile.lock
+RUN bundle config --global frozen 1
 
 RUN gem install foreman
 
-RUN adduser rails --disabled-password --gecos "" \
-    && mkdir -p /home/rails/app \
-    && chown -R rails:rails /home/rails/app \
-    && mkdir $BUNDLE_PATH \
-    && chown -R rails:rails $BUNDLE_PATH
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
-ONBUILD ADD Gemfile /home/rails/app/
-ONBUILD ADD Gemfile.lock /home/rails/app/
-ONBUILD RUN chown -R rails:rails Gemfile Gemfile.lock
-ONBUILD RUN sudo -H -u rails bundle install --path $BUNDLE_PATH
-ONBUILD ADD . /home/rails/app
-ONBUILD RUN chown -R rails:rails /home/rails/app $BUNDLE_PATH
+ONBUILD COPY Gemfile /usr/src/app/
+ONBUILD COPY Gemfile.lock /usr/src/app/
+ONBUILD RUN bundle install
+ONBUILD COPY . /usr/src/app
 
-WORKDIR /home/rails/app
 EXPOSE 3000
 CMD ["foreman", "start"]
