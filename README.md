@@ -1,4 +1,4 @@
 docker-rails
 ============
 
-Docker image for Rails applications.
+Docker image for Rails applications
